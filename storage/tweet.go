@@ -3,6 +3,7 @@ import (
 	"database/sql"
 	"github.com/ChimeraCoder/anaconda"
 	"time"
+	"fmt"
 )
 
 type Tweet struct {
@@ -31,13 +32,14 @@ func Add(db *sql.DB, tweet anaconda.Tweet) error {
 		return err
 	}
 	sql := `
-		INSERT INTO tweet
+		INSERT INTO tweets
 		(id, created)
 		VALUES
 		( ?, ?)
 	`
 	_, err = tx.Exec(sql, tweet.Id, time.Now())
 	if err != nil {
+		fmt.Println(err)
 		tx.Rollback()
 		return err
 	}
