@@ -1,9 +1,10 @@
 package storage
+
 import (
 	"database/sql"
+	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"time"
-	"fmt"
 )
 
 type Tweet struct {
@@ -54,12 +55,12 @@ func Exists(db *sql.DB, tweet anaconda.Tweet) (bool, error) {
 	err := db.QueryRow(existsSql, tweet.Id).Scan(
 		&(storeTweet.Id),
 	)
-	switch{
-		case err == sql.ErrNoRows:
-			return false, nil
-		case err != nil:
-			return true, err
-		default:
-			return true, nil
+	switch {
+	case err == sql.ErrNoRows:
+		return false, nil
+	case err != nil:
+		return true, err
+	default:
+		return true, nil
 	}
 }

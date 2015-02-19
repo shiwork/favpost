@@ -12,12 +12,14 @@ type AccessToken struct {
 	Secret     string
 	Expiration time.Time
 	Expired    bool
+	Created    time.Time
 }
 
 type User struct {
 	Id          int64
 	ScreenName  string
 	AccessToken AccessToken
+	Created     time.Time
 }
 
 type UserRepository struct {
@@ -27,7 +29,7 @@ type UserRepository struct {
 
 func GetUserRepository(db *sql.DB) UserRepository {
 	return UserRepository{
-		userPers: persistence.UserPersistence{db},
+		userPers:  persistence.UserPersistence{db},
 		tokenPers: persistence.AccessTokenPersistence{db},
 	}
 }
@@ -39,6 +41,7 @@ func (r UserRepository) Get(user_id int64) (*User, error) {
 	err := row.Scan(
 		&(user.Id),
 		&(user.ScreenName),
+		&(user.Created),
 	)
 	if err != nil {
 		return nil, err
@@ -53,11 +56,13 @@ func (r UserRepository) Get(user_id int64) (*User, error) {
 		&(token.Id),
 		&(token.Token),
 		&(token.Secret),
+		&(token.Created),
 	)
 	if err != nil {
 		// Tokenがエラーでもとりあえず動かすが、念の為初期化
 		token = &AccessToken{}
 	}
+
 	user.AccessToken = *token
 	return user, nil
 }

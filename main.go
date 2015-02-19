@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/ChimeraCoder/anaconda"
-	"github.com/shiwork/favpost/config"
-	"os"
-	"log"
 	"database/sql"
-	"github.com/shiwork/favpost/storage"
+	"log"
+	"os"
 	"time"
-	"github.com/shiwork/favpost/model"
+
+	"github.com/ChimeraCoder/anaconda"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/shiwork/favpost/config"
+	"github.com/shiwork/favpost/model"
+	"github.com/shiwork/favpost/storage"
 )
 
 var confPath = os.Getenv("FAVPOST_CONFIG")
@@ -31,16 +32,23 @@ func main() {
 
 	anaconda.SetConsumerKey(conf.Consumer.ConsumerKey)
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)
-	api := anaconda.NewTwitterApi(conf.AccessToken.Token, conf.AccessToken.Secret)
 
+	// このへんは後で
+	//	var callbackURL = "http://localhost:9001/auth/callback"
+	//	credentials, err := anaconda.AuthorizationURL(callbackURL)
+
+	var user_id = int64(90649479) // @shiwork
+	userRepos := model.GetUserRepository(db)
 	for {
-
+		user := &model.User{}
+		user, err = userRepos.Get(user_id)
+		api := anaconda.NewTwitterApi(user.AccessToken.Token, user.AccessToken.Secret)
 		searchResult, _ := api.GetFavorites(nil)
 
 		for _, tweet := range searchResult {
 			if len(tweet.Entities.Media) > 0 {
 
-				exists,_ := storage.Exists(db, tweet)
+				exists, _ := storage.Exists(db, tweet)
 				if !exists {
 					storage.Add(db, tweet)
 					model.SlackShare{conf.WebHookURL}.Share(tweet)

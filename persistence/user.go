@@ -1,8 +1,8 @@
 package persistence
+
 import (
 	"database/sql"
 )
-
 
 type UserPersistence struct {
 	*sql.DB
@@ -12,6 +12,7 @@ func (p UserPersistence) Prepare() error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS user (
 		id	BIGINT UNSIGNED NOT NULL,
+		screen_name VARCHAR(100) NOT NULL,
 		created TIMESTAMP NOT NULL,
 		PRIMARY KEY(id)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -25,7 +26,7 @@ func (p UserPersistence) Prepare() error {
 }
 
 func (p UserPersistence) Get(user_id int64) *sql.Row {
-	sql := `SELECT * FROM tweets WHERE id = ? LIMIT 1`
+	sql := `SELECT * FROM user WHERE id = ? LIMIT 1`
 	return p.QueryRow(sql, user_id)
 }
 

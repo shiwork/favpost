@@ -1,4 +1,5 @@
 package persistence
+
 import (
 	"database/sql"
 	"fmt"
@@ -8,7 +9,6 @@ type AccessTokenPersistence struct {
 	*sql.DB
 }
 
-
 func (p AccessTokenPersistence) Prepare() error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS access_token (
@@ -16,7 +16,7 @@ func (p AccessTokenPersistence) Prepare() error {
 		token VARCHAR(100) NOT NULL,
 		secret VARCHAR(100) NOT NULL,
 		created TIMESTAMP NOT NULL,
-		PRIMARY KEY(id)
+		PRIMARY KEY(user_id)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 	`
 	_, err := p.Exec(sql)
@@ -54,28 +54,28 @@ func (p AccessTokenPersistence) AddOrUpdate(user_id int64, token interface{}) er
 	fmt.Println(user_id)
 	fmt.Print(token)
 	return nil
-//	tx, err := p.Begin()
-//	if err := nil {
-//		return err
-//	}
-//
-//	sql := `
-//	INSERT INTO access_token
-//		(user_id, token, secret, created)
-//	VALUES
-//		( ?, ?, ?, ?)
-//	DUPLICATE KEY UPDATE
-//		token = VALUES(token),
-//		secret = VALUES(secret),
-//		created = VALUES(created)
-//	`
-//
-//	_, err = tx.Exec(sql, user_id, token, token, time.Now(), user_id)
-//	if err != nil {
-//		tx.Rollback()
-//		return err
-//	}
-//
-//	tx.Commit()
-//	return nil
+	//	tx, err := p.Begin()
+	//	if err := nil {
+	//		return err
+	//	}
+	//
+	//	sql := `
+	//	INSERT INTO access_token
+	//		(user_id, token, secret, created)
+	//	VALUES
+	//		( ?, ?, ?, ?)
+	//	DUPLICATE KEY UPDATE
+	//		token = VALUES(token),
+	//		secret = VALUES(secret),
+	//		created = VALUES(created)
+	//	`
+	//
+	//	_, err = tx.Exec(sql, user_id, token, token, time.Now(), user_id)
+	//	if err != nil {
+	//		tx.Rollback()
+	//		return err
+	//	}
+	//
+	//	tx.Commit()
+	//	return nil
 }

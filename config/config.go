@@ -1,26 +1,26 @@
 package config
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
-	"encoding/json"
 )
 
 type TwitterConsumer struct {
-	ConsumerKey string `json:"consumer_key"`
+	ConsumerKey    string `json:"consumer_key"`
 	ConsumerSecret string `json:"consumer_secret"`
 }
 
 type AccessToken struct {
-	Token string `json:"token"`
+	Token  string `json:"token"`
 	Secret string `json:"secret"`
 }
 
 type FavPConfig struct {
-	Consumer TwitterConsumer `json:"twitter_consumer"`
-	AccessToken AccessToken `json:"access_token"`
-	WebHookURL string `json:"web_hook_url"`
-	DbDsn string `json:"db_dsn"`
+	Consumer    TwitterConsumer `json:"twitter_consumer"`
+	AccessToken AccessToken     `json:"access_token"`
+	WebHookURL  string          `json:"web_hook_url"`
+	DbDsn       string          `json:"db_dsn"`
 }
 
 func Parse(filename string) (FavPConfig, error) {
