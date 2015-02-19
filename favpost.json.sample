@@ -1,0 +1,12 @@
+{
+  "twitter_consumer" : {
+    "consumer_key" : "consumer_key",
+    "consumer_secret": "consumer_secret"
+  },
+  "access_token": {
+    "token": "user_access_token",
+    "secret": "user_access_token_secret"
+  },
+  "web_hook_url": "https://hooks.slack.com/services/ABCDEFG/HIJKLMN/1234567qwerty",
+  "db_dsn": "dbuser:dbpass@tcp(localhost:3306)/favpost?parseTime=true&charset=utf8mb4"
+}
