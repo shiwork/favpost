@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/ChimeraCoder/anaconda"
-	"github.com/shiwork/slack"
 	"github.com/shiwork/favpost/config"
 	"os"
 	"log"
 	"database/sql"
 	"github.com/shiwork/favpost/storage"
 	"time"
+	"github.com/shiwork/favpost/model"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -32,7 +32,6 @@ func main() {
 	anaconda.SetConsumerKey(conf.Consumer.ConsumerKey)
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)
 	api := anaconda.NewTwitterApi(conf.AccessToken.Token, conf.AccessToken.Secret)
-	incoming := slack.Incoming{WebHookURL: conf.WebHookURL}
 
 	for {
 
@@ -44,20 +43,7 @@ func main() {
 				exists,_ := storage.Exists(db, tweet)
 				if !exists {
 					storage.Add(db, tweet)
-
-					incoming.Post(
-					slack.Payload{
-						Attachments: []slack.Attachment{
-							slack.Attachment{
-								Pretext: "http://twitter.com/" + tweet.User.ScreenName + "/status/" + tweet.IdStr,
-								Title: tweet.User.Name + " @" + tweet.User.ScreenName,
-								TitleLink: tweet.User.URL,
-								Text: tweet.Text,
-								ImageUrl: tweet.Entities.Media[0].Media_url,
-							},
-						},
-					},
-					)
+					model.SlackShare{conf.WebHookURL}.Share(tweet)
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 package persistence
 import (
 	"database/sql"
-	"github.com/shiwork/favpost/model"
 )
 
 
@@ -25,11 +24,11 @@ func (p UserPersistence) Prepare() error {
 	return nil
 }
 
-func (p UserPersistence) Get(user_id int64) sql.Row {
+func (p UserPersistence) Get(user_id int64) *sql.Row {
 	sql := `SELECT * FROM tweets WHERE id = ? LIMIT 1`
 	return p.QueryRow(sql, user_id)
 }
 
-func (p UserPersistence) Add(user model.User) error {
+func (p UserPersistence) Add(interface{}) error {
 	return nil
 }

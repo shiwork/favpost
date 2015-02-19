@@ -33,12 +33,10 @@ func GetUserRepository(db *sql.DB) UserRepository {
 }
 
 func (r UserRepository) Get(user_id int64) (*User, error) {
-	row, err := r.userPers.Get(user_id)
-	if err != nil {
-		return nil, err
-	}
+	row := r.userPers.Get(user_id)
+
 	user := &User{}
-	err = row.Scan(
+	err := row.Scan(
 		&(user.Id),
 		&(user.ScreenName),
 	)
@@ -46,11 +44,9 @@ func (r UserRepository) Get(user_id int64) (*User, error) {
 		return nil, err
 	}
 
-	row, err = r.tokenPers.Get(user_id)
+	row = r.tokenPers.Get(user_id)
 	// todo tokenが削除されている場合を考慮する
-	if err != nil {
-		return nil, err
-	}
+
 	token := &AccessToken{}
 
 	err = row.Scan(
@@ -62,8 +58,8 @@ func (r UserRepository) Get(user_id int64) (*User, error) {
 		// Tokenがエラーでもとりあえず動かすが、念の為初期化
 		token = &AccessToken{}
 	}
-	user.AccessToken = token
-	return &user, nil
+	user.AccessToken = *token
+	return user, nil
 }
 
 func (r UserRepository) Exists(Id int64) bool {
