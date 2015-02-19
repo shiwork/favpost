@@ -67,6 +67,41 @@ func (r UserRepository) Get(user_id int64) (*User, error) {
 	return user, nil
 }
 
+func (r UserRepository) GetAll() (*[]User, error) {
+	rows, err := r.userPers.GetAll()
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	var users []User
+	for rows.Next() {
+		user := &User{}
+		err := rows.Scan(
+			&(user.Id),
+			&(user.ScreenName),
+			&(user.Created),
+		)
+		if err != nil {
+			continue
+		}
+
+		row := r.tokenPers.Get(user.Id)
+		token := &AccessToken{}
+		err = row.Scan(
+			&(token.Id),
+			&(token.Token),
+			&(token.Secret),
+			&(token.Created),
+		)
+		if err != nil {
+			continue
+		}
+		user.AccessToken = *token
+		users = append(users, *user)
+	}
+	return &users, nil
+}
+
 func (r UserRepository) Exists(Id int64) bool {
 	_, err := r.Get(Id)
 	switch {

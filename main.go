@@ -37,21 +37,27 @@ func main() {
 	//	var callbackURL = "http://localhost:9001/auth/callback"
 	//	credentials, err := anaconda.AuthorizationURL(callbackURL)
 
-	var user_id = int64(90649479) // @shiwork
+	//var user_id = int64(90649479) // @shiwork
 	userRepos := model.GetUserRepository(db)
 	for {
-		user := &model.User{}
-		user, err = userRepos.Get(user_id)
-		api := anaconda.NewTwitterApi(user.AccessToken.Token, user.AccessToken.Secret)
-		searchResult, _ := api.GetFavorites(nil)
+		// 酷いけどとりあえず全ユーザーを取得して処理を回す
+		users := &[]model.User{}
+		users, err = userRepos.GetAll()
 
-		for _, tweet := range searchResult {
-			if len(tweet.Entities.Media) > 0 {
+		for _, user := range *users {
+			//user := &model.User{}
+			//user, err = userRepos.Get(user_id)
+			api := anaconda.NewTwitterApi(user.AccessToken.Token, user.AccessToken.Secret)
+			searchResult, _ := api.GetFavorites(nil)
 
-				exists, _ := storage.Exists(db, tweet)
-				if !exists {
-					storage.Add(db, tweet)
-					model.SlackShare{conf.WebHookURL}.Share(tweet)
+			for _, tweet := range searchResult {
+				if len(tweet.Entities.Media) > 0 {
+
+					exists, _ := storage.Exists(db, tweet)
+					if !exists {
+						storage.Add(db, tweet)
+						model.SlackShare{conf.WebHookURL}.Share(tweet)
+					}
 				}
 			}
 		}

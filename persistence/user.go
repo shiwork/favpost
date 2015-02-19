@@ -33,3 +33,8 @@ func (p UserPersistence) Get(user_id int64) *sql.Row {
 func (p UserPersistence) Add(interface{}) error {
 	return nil
 }
+
+func (p UserPersistence) GetAll() (*sql.Rows, error) {
+	sql := `SELECT * FROM user`
+	return p.Query(sql)
+}
