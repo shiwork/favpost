@@ -49,7 +49,7 @@ func main() {
 					slack.Payload{
 						Attachments: []slack.Attachment{
 							slack.Attachment{
-								Pretext: "http://twitter.com/" + tweet.User.IdStr + "/status/" + tweet.IdStr,
+								Pretext: "http://twitter.com/" + tweet.User.ScreenName + "/status/" + tweet.IdStr,
 								Title: tweet.User.Name + " @" + tweet.User.ScreenName,
 								TitleLink: tweet.User.URL,
 								Text: tweet.Text,
