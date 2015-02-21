@@ -10,6 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/shiwork/favpost/config"
 	"github.com/shiwork/favpost/model"
+	"github.com/shiwork/favpost/server"
 	"github.com/shiwork/favpost/storage"
 )
 
@@ -39,30 +40,46 @@ func main() {
 
 	//var user_id = int64(90649479) // @shiwork
 	userRepos := model.GetUserRepository(db)
-	for {
-		// 酷いけどとりあえず全ユーザーを取得して処理を回す
-		users := &[]model.User{}
-		users, err = userRepos.GetAll()
+	go func() {
+		for {
+			// 酷いけどとりあえず全ユーザーを取得して処理を回す
+			users := &[]model.User{}
+			users, err = userRepos.GetAll()
+			// sleep 5min
+			time.Sleep(5 * time.Minute)
 
-		for _, user := range *users {
-			//user := &model.User{}
-			//user, err = userRepos.Get(user_id)
-			api := anaconda.NewTwitterApi(user.AccessToken.Token, user.AccessToken.Secret)
-			searchResult, _ := api.GetFavorites(nil)
+			for _, user := range *users {
+				//user := &model.User{}
+				//user, err = userRepos.Get(user_id)
+				api := anaconda.NewTwitterApi(user.AccessToken.Token, user.AccessToken.Secret)
+				searchResult, _ := api.GetFavorites(nil)
 
-			for _, tweet := range searchResult {
-				if len(tweet.Entities.Media) > 0 {
+				for _, tweet := range searchResult {
+					if len(tweet.Entities.Media) > 0 {
 
-					exists, _ := storage.Exists(db, tweet)
-					if !exists {
-						storage.Add(db, tweet)
-						model.SlackShare{conf.WebHookURL}.Share(tweet)
+						exists, _ := storage.Exists(db, tweet)
+						if !exists {
+							storage.Add(db, tweet)
+							model.SlackShare{conf.WebHookURL}.Share(tweet)
+						}
 					}
 				}
 			}
-		}
 
-		// sleep 5min
-		time.Sleep(5 * time.Minute)
-	}
+			// sleep 5min
+			time.Sleep(5 * time.Minute)
+		}
+	}()
+
+	/*
+		fmt.Println("run http")
+		http.HandleFunc("/", server.SayhelloName)
+		err = http.ListenAndServe(":9090", nil)
+		if err != nil {
+			fmt.Println("http Listen error")
+			log.Fatal("ListenAndServe: ", err)
+		}
+		fmt.Println("end of main func.")
+	*/
+	server.Run(conf, db)
 }
