@@ -12,6 +12,7 @@ import (
 	"github.com/shiwork/favpost/model"
 	"github.com/shiwork/favpost/server"
 	"github.com/shiwork/favpost/storage"
+	"flag"
 )
 
 var confPath = os.Getenv("FAVPOST_CONFIG")
@@ -30,6 +31,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Db prepare error: %v\n", err)
 	}
+
+	flag.Set("bind", ":80")
 
 	anaconda.SetConsumerKey(conf.Consumer.ConsumerKey)
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)
