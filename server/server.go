@@ -98,7 +98,7 @@ func Setting(c web.C, w http.ResponseWriter, r *http.Request) {
 func Login(c web.C, w http.ResponseWriter, r *http.Request) {
 	InitSession(r)
 
-	callbackURL := "http://127.0.0.1:8000/login/callback"
+	callbackURL := "http://" + r.Host + "/login/callback"
 	authURL, tempCred, err := anaconda.AuthorizationURL(callbackURL)
 	if err != nil {
 		fmt.Println("Error: %v", err)
