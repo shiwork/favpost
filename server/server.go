@@ -57,19 +57,22 @@ func InitSession(r *http.Request) {
 func Top(c web.C, w http.ResponseWriter, r *http.Request) {
 	InitSession(r)
 
-	_, loginStatus := session.Values["user_id"]
+	user_id, loginStatus := session.Values["user_id"]
+	tpl, err := pongo2.DefaultSet.FromFile("top.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if loginStatus {
+		repo := model.GetUserRepository(db)
+		user, _ := repo.Get(user_id.(int64))
+
 		// login済みの場合は設定画面に遷移
-		http.Redirect(w, r, "/setting", 303)
+		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus, "user": user}, w)
 	} else {
 		// ログインしてない場合はログイン画面を表示
-		tpl, err := pongo2.DefaultSet.FromFile("top.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		tpl.ExecuteWriter(pongo2.Context{}, w)
+		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus}, w)
 	}
 }
 
@@ -172,7 +175,6 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error: %v", err)
 	}
-
 
 	// login session
 	session.Values["user_id"] = user_id

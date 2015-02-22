@@ -2,9 +2,19 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <title>ふぁぼがぞう</title>
 </head>
 <body>
-Top
+<p>
+    {% if login %}ようこそ{{ user.ScreenName }}さん{% else %}<a href="/login">登録する</a>{% endif %}
+</p>
+
+<div id="timeline">
+    <blockquote class="twitter-tweet" lang="ja">
+        <a href="https://twitter.com/tanakh/status/569392720004804611"></a>
+    </blockquote>
+</div>
+
 </body>
 </html>

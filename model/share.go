@@ -20,12 +20,12 @@ type Sharing interface {
 	Share(anaconda.Tweet) error
 }
 
-type Tweet struct {
+type AnacondaTweet struct {
 	*anaconda.Tweet
 }
 
 // added tweet function
-func (t *Tweet) URL() string {
+func (t *AnacondaTweet) URL() string {
 	return "http://twitter.com/" + t.User.ScreenName + "/status/" + t.IdStr
 }
 
@@ -34,7 +34,7 @@ type SlackShare struct {
 }
 
 func (s SlackShare) Share(atweet anaconda.Tweet) error {
-	tweet := Tweet{&atweet}
+	tweet := AnacondaTweet{&atweet}
 	incoming := slack.Incoming{WebHookURL: s.WebHookURL}
 	return incoming.Post(
 		slack.Payload{

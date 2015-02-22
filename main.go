@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
+	"flag"
+
 	"github.com/ChimeraCoder/anaconda"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/shiwork/favpost/config"
 	"github.com/shiwork/favpost/model"
 	"github.com/shiwork/favpost/server"
-	"github.com/shiwork/favpost/storage"
-	"flag"
 )
 
 var confPath = os.Getenv("FAVPOST_CONFIG")
@@ -27,19 +27,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Db initialize error %v\n", err)
 	}
-	err = storage.Prepare(db)
-	if err != nil {
-		log.Fatalf("Db prepare error: %v\n", err)
-	}
 
 	flag.Set("bind", ":9000")
 
 	anaconda.SetConsumerKey(conf.Consumer.ConsumerKey)
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)
-
-	// このへんは後で
-	//	var callbackURL = "http://localhost:9001/auth/callback"
-	//	credentials, err := anaconda.AuthorizationURL(callbackURL)
 
 	//var user_id = int64(90649479) // @shiwork
 	userRepos := model.GetUserRepository(db)
@@ -49,8 +41,6 @@ func main() {
 			users := &[]model.User{}
 			users, err = userRepos.GetAll()
 			// sleep 5min
-			time.Sleep(5 * time.Minute)
-
 			for _, user := range *users {
 				//user := &model.User{}
 				//user, err = userRepos.Get(user_id)
@@ -59,10 +49,15 @@ func main() {
 
 				for _, tweet := range searchResult {
 					if len(tweet.Entities.Media) > 0 {
+						ftweet := model.Tweet{
+							Id:         tweet.Id,
+							ScreenName: tweet.User.ScreenName,
+						}
 
-						exists, _ := storage.Exists(db, tweet)
+						tweetStore := model.GetTweetRepository(db)
+						exists, _ := tweetStore.Exists(ftweet)
 						if !exists {
-							storage.Add(db, tweet)
+							tweetStore.Add(ftweet)
 							model.SlackShare{conf.WebHookURL}.Share(tweet)
 						}
 					}
@@ -74,15 +69,5 @@ func main() {
 		}
 	}()
 
-	/*
-		fmt.Println("run http")
-		http.HandleFunc("/", server.SayhelloName)
-		err = http.ListenAndServe(":9090", nil)
-		if err != nil {
-			fmt.Println("http Listen error")
-			log.Fatal("ListenAndServe: ", err)
-		}
-		fmt.Println("end of main func.")
-	*/
 	server.Run(conf, db)
 }
