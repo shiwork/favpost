@@ -38,12 +38,12 @@ func (p UserPersistence) Add(user_id int64, screenName string) error {
 	}
 
 	sql := `
-		INSERT INTO access_token
-			(user_id, screen_name, created)
+		INSERT INTO user
+			(id, screen_name, created)
 		VALUES
 			( ?, ?, ?)
 		ON DUPLICATE KEY UPDATE
-			user_id = VALUES(user_id),
+			id = VALUES(id),
 			screen_name = VALUES(screen_name),
 			created = VALUES(created)
 	`

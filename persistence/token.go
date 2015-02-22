@@ -67,7 +67,7 @@ func (p AccessTokenPersistence) AddOrUpdate(user_id int64, token string, secret 
 		created = VALUES(created)
 	`
 
-	_, err = tx.Exec(sql, user_id, token, secret, time.Now(), user_id)
+	_, err = tx.Exec(sql, user_id, token, secret, time.Now())
 	if err != nil {
 		tx.Rollback()
 		return err
