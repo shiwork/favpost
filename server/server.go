@@ -23,7 +23,7 @@ var db *sql.DB
 func Run(conf config.FavPConfig, dbInstance *sql.DB) {
 	conf = conf
 	db = dbInstance
-	pongo2.DefaultSet.SetBaseDirectory("server/view")
+	pongo2.DefaultSet.SetBaseDirectory(conf.TemplatePath)
 
 	goji.Get("/", Top)
 	goji.Get("/setting", Setting)
@@ -44,7 +44,7 @@ func InitSession(r *http.Request) {
 		panic(err)
 	}
 	store.Options = &sessions.Options{
-		Domain: "127.0.0.1",
+		Domain: r.Host,
 		MaxAge: 10 * 24 * 3600,
 	}
 

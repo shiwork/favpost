@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("Db prepare error: %v\n", err)
 	}
 
-	flag.Set("bind", ":8002")
+	flag.Set("bind", ":9000")
 
 	anaconda.SetConsumerKey(conf.Consumer.ConsumerKey)
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)

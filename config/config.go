@@ -21,6 +21,7 @@ type FavPConfig struct {
 	AccessToken AccessToken     `json:"access_token"`
 	WebHookURL  string          `json:"web_hook_url"`
 	DbDsn       string          `json:"db_dsn"`
+	TemplatePath string			`json:"template_path"`
 }
 
 func Parse(filename string) (FavPConfig, error) {
