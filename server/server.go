@@ -164,8 +164,15 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	// save user and token
 	repo := model.GetUserRepository(db)
-	repo.Add(user)
-	repo.SaveToken(user)
+	err = repo.Add(user)
+	if err != nil {
+		fmt.Println("Error: %v", err)
+	}
+	err = repo.SaveToken(user)
+	if err != nil {
+		fmt.Println("Error: %v", err)
+	}
+
 
 	// login session
 	session.Values["user_id"] = user_id
