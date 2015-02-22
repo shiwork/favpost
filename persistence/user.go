@@ -42,7 +42,7 @@ func (p UserPersistence) Add(user_id int64, screenName string) error {
 			(user_id, screen_name, created)
 		VALUES
 			( ?, ?, ?)
-		DUPLICATE KEY UPDATE
+		ON DUPLICATE KEY UPDATE
 			user_id = VALUES(user_id),
 			screen_name = VALUES(screen_name),
 			created = VALUES(created)

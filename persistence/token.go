@@ -61,7 +61,7 @@ func (p AccessTokenPersistence) AddOrUpdate(user_id int64, token string, secret 
 		(user_id, token, secret, created)
 	VALUES
 		( ?, ?, ?, ?)
-	DUPLICATE KEY UPDATE
+	ON DUPLICATE KEY UPDATE
 		token = VALUES(token),
 		secret = VALUES(secret),
 		created = VALUES(created)
