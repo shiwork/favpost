@@ -10,9 +10,14 @@ import (
 
 	"github.com/ChimeraCoder/anaconda"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/kavu/go-resque"
+	_ "github.com/kavu/go-resque/godis"
 	"github.com/shiwork/favpost/config"
 	"github.com/shiwork/favpost/model"
 	"github.com/shiwork/favpost/server"
+	"github.com/simonz05/godis/redis"
+	"fmt"
+	"strconv"
 )
 
 var confPath = os.Getenv("FAVPOST_CONFIG")
@@ -35,6 +40,11 @@ func main() {
 
 	//var user_id = int64(90649479) // @shiwork
 	userRepos := model.GetUserRepository(db)
+
+	// enqueue
+	redisClient := redis.New("tcp:127.0.0.1:6379", 0, "")
+	botqueue := resque.NewRedisEnqueuer("godis", redisClient)
+
 	go func() {
 		for {
 			// 酷いけどとりあえず全ユーザーを取得して処理を回す
@@ -59,6 +69,12 @@ func main() {
 						if !exists {
 							tweetStore.Add(ftweet)
 							model.SlackShare{conf.WebHookURL}.Share(tweet)
+						}
+
+						// bot enqueue
+						_, err := botqueue.Enqueue("resque:queue:favpostbot", "Favpost", strconv.FormatInt(tweet.Id, 10), tweet.User.ScreenName)
+						if err != nil {
+							fmt.Println(err)
 						}
 					}
 				}
