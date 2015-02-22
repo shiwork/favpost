@@ -1,19 +1,20 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
-	"github.com/zenazn/goji"
+	"strconv"
+
+	"github.com/ChimeraCoder/anaconda"
 	"github.com/flosch/pongo2"
+	"github.com/garyburd/go-oauth/oauth"
+	"github.com/gorilla/sessions"
+	"github.com/shiwork/favpost/config"
+	"github.com/shiwork/favpost/model"
+	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"gopkg.in/boj/redistore.v1"
-	"github.com/gorilla/sessions"
-	"github.com/ChimeraCoder/anaconda"
-	"github.com/garyburd/go-oauth/oauth"
-	"github.com/shiwork/favpost/model"
-	"github.com/shiwork/favpost/config"
-	"database/sql"
-	"strconv"
 )
 
 var conf config.FavPConfig
@@ -28,8 +29,8 @@ func Run(conf config.FavPConfig, dbInstance *sql.DB) {
 	goji.Get("/setting", Setting)
 	goji.Get("/login", Login)
 	goji.Get("/login/callback", LoginCallback)
-//	goji.Get("/login", Login)
-//	goji.Get("/login/callback", Callback)
+	//	goji.Get("/login", Login)
+	//	goji.Get("/login/callback", Callback)
 
 	goji.Serve()
 }
@@ -43,8 +44,8 @@ func InitSession(r *http.Request) {
 		panic(err)
 	}
 	store.Options = &sessions.Options{
-		Domain:"127.0.0.1",
-		MaxAge: 10*24*3600,
+		Domain: "127.0.0.1",
+		MaxAge: 10 * 24 * 3600,
 	}
 
 	session, err = store.Get(r, "session-key")
@@ -72,10 +73,10 @@ func Top(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Setting(c web.C, w http.ResponseWriter, r *http.Request){
+func Setting(c web.C, w http.ResponseWriter, r *http.Request) {
 	InitSession(r)
 
-	_, loginStatus := session.Values["user_id"]
+	user_id, loginStatus := session.Values["user_id"]
 	if !loginStatus {
 		// ログインしてないのでTopに飛ばす
 		http.Redirect(w, r, "/", 303)
@@ -86,7 +87,11 @@ func Setting(c web.C, w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tpl.ExecuteWriter(pongo2.Context{}, w)
+
+	repo := model.GetUserRepository(db)
+	user, _ := repo.Get(user_id.(int64))
+
+	tpl.ExecuteWriter(pongo2.Context{"user": user}, w)
 }
 
 // Twitterでしか認証しないので問答無用で遷移させる
@@ -124,7 +129,7 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 	verifier := r.Form["oauth_verifier"][0]
 
 	tempCred := &oauth.Credentials{
-		Token: session.Values["temp_twitter_token"].(string),
+		Token:  session.Values["temp_twitter_token"].(string),
 		Secret: session.Values["temp_twitter_secret"].(string),
 	}
 	fmt.Println(tempCred)
@@ -146,15 +151,14 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	user_id, _ := strconv.ParseInt(values["user_id"][0], 10, 64)
 
-
 	token := model.AccessToken{
-		Id: user_id,
-		Token: values["oauth_token"][0],
+		Id:     user_id,
+		Token:  values["oauth_token"][0],
 		Secret: values["oauth_token_secret"][0],
 	}
 	user := model.User{
-		Id: user_id,
-		ScreenName: values["screen_name"][0],
+		Id:          user_id,
+		ScreenName:  values["screen_name"][0],
 		AccessToken: token,
 	}
 
@@ -171,8 +175,8 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error saving session: %v", err)
 	}
 
-//	tpl, err := pongo2.DefaultSet.FromFile("login_callback.html")
-//	tpl.ExecuteWriter(pongo2.Context{"token": *credentials}, w)
+	//	tpl, err := pongo2.DefaultSet.FromFile("login_callback.html")
+	//	tpl.ExecuteWriter(pongo2.Context{"token": *credentials}, w)
 
 	// save user data and create login session
 	// success login
