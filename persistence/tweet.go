@@ -63,7 +63,6 @@ func (p *TweetDAO) GetByTweet(tweet_id int64, order bool, limit int) (*sql.Rows,
 }
 
 func (p *TweetDAO) GetByLimit(limit int) (*sql.Rows, error) {
-	sql := `
-		SELECT * FROM tweet LIMIT ?`
+	sql := `SELECT * FROM tweet ORDER BY tweet_id DESC LIMIT ?`
 	return p.Query(sql, limit)
 }
