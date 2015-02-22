@@ -77,3 +77,34 @@ func (r *TweetRepository) FindByOrder(tweet Tweet, order bool, limit int) (*[]Tw
 
 	return &tweets, nil
 }
+
+func (r *TweetRepository) Find(limit int) (*[]Tweet, error) {
+	if limit > 100 {
+		limit = 100
+	}
+	if limit < 0 {
+		limit = 1
+	}
+
+	rows, err := r.tweetDAO.GetByLimit(limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tweets []Tweet
+	for rows.Next() {
+		tweet := &Tweet{}
+		err := rows.Scan(
+			&(tweet.Id),
+			&(tweet.ScreenName),
+		)
+		if err != nil {
+			continue
+		}
+
+		tweets = append(tweets, *tweet)
+	}
+
+	return &tweets, nil
+}

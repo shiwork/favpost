@@ -11,9 +11,11 @@
 </p>
 
 <div id="timeline">
+    {% for tweet in tweets %}
     <blockquote class="twitter-tweet" lang="ja">
-        <a href="https://twitter.com/tanakh/status/569392720004804611"></a>
+        <a href="https://twitter.com/{{tweet.ScreenName}}/status/{{tweet.Id}}"></a>
     </blockquote>
+    {% endfor %}
 </div>
 
 </body>

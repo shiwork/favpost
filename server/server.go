@@ -64,15 +64,21 @@ func Top(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	repo := model.GetTweetRepository(db)
+	tweets, err := repo.Find(20)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	if loginStatus {
 		repo := model.GetUserRepository(db)
 		user, _ := repo.Get(user_id.(int64))
 
 		// login済みの場合は設定画面に遷移
-		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus, "user": user}, w)
+		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus, "user": user, "tweets": tweets}, w)
 	} else {
 		// ログインしてない場合はログイン画面を表示
-		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus}, w)
+		tpl.ExecuteWriter(pongo2.Context{"login": loginStatus, "tweets": tweets}, w)
 	}
 }
 
