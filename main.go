@@ -69,13 +69,15 @@ func main() {
 						if !exists {
 							tweetStore.Add(ftweet)
 							model.SlackShare{conf.WebHookURL}.Share(tweet)
+
+							// bot enqueue
+							_, err := botqueue.Enqueue("resque:queue:favpostbot", "Favpost", strconv.FormatInt(tweet.Id, 10), tweet.User.ScreenName)
+							if err != nil {
+								fmt.Println(err)
+							}
+
 						}
 
-						// bot enqueue
-						_, err := botqueue.Enqueue("resque:queue:favpostbot", "Favpost", strconv.FormatInt(tweet.Id, 10), tweet.User.ScreenName)
-						if err != nil {
-							fmt.Println(err)
-						}
 					}
 				}
 			}
