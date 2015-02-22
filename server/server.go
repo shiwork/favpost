@@ -164,9 +164,7 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	// save user and token
 	repo := model.GetUserRepository(db)
-	if !repo.Exists(user.Id) {
-		repo.Add(user)
-	}
+	repo.Add(user)
 	repo.SaveToken(user)
 
 	// login session

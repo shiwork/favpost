@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"database/sql"
+	"time"
 )
 
 type UserPersistence struct {
@@ -30,7 +31,30 @@ func (p UserPersistence) Get(user_id int64) *sql.Row {
 	return p.QueryRow(sql, user_id)
 }
 
-func (p UserPersistence) Add(interface{}) error {
+func (p UserPersistence) Add(user_id int64, screenName string) error {
+	tx, err := p.Begin()
+	if err != nil {
+		return err
+	}
+
+	sql := `
+		INSERT INTO access_token
+			(user_id, screen_name, created)
+		VALUES
+			( ?, ?, ?)
+		DUPLICATE KEY UPDATE
+			user_id = VALUES(user_id),
+			screen_name = VALUES(screen_name),
+			created = VALUES(created)
+	`
+
+	_, err = tx.Exec(sql, user_id, screenName, time.Now())
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
 	return nil
 }
 

@@ -113,9 +113,9 @@ func (r UserRepository) Exists(Id int64) bool {
 }
 
 func (r UserRepository) Add(user User) error {
-	return r.userPers.Add(user)
+	return r.userPers.Add(user.Id, user.ScreenName)
 }
 
 func (r UserRepository) SaveToken(user User) error {
-	return r.tokenPers.AddOrUpdate(user.Id, user.AccessToken)
+	return r.tokenPers.AddOrUpdate(user.Id, user.AccessToken.Token, user.AccessToken.Secret)
 }
