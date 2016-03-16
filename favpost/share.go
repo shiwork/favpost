@@ -1,4 +1,4 @@
-package model
+package favpost
 
 import (
 	"github.com/ChimeraCoder/anaconda"

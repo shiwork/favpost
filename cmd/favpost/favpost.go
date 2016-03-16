@@ -12,9 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kavu/go-resque"
 	_ "github.com/kavu/go-resque/godis"
-	"github.com/shiwork/favpost/config"
-	"github.com/shiwork/favpost/model"
-	"github.com/shiwork/favpost/server"
+	"../../favpost"
 	"github.com/simonz05/godis/redis"
 	"fmt"
 	"strconv"
@@ -23,7 +21,10 @@ import (
 var confPath = os.Getenv("FAVPOST_CONFIG")
 
 func main() {
-	conf, err := config.Parse(confPath)
+	confPath := flag.String("c", "", "configuration file path")
+	flag.Parse()
+
+	conf, err := favpost.Parse(confPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +40,7 @@ func main() {
 	anaconda.SetConsumerSecret(conf.Consumer.ConsumerSecret)
 
 	//var user_id = int64(90649479) // @shiwork
-	userRepos := model.GetUserRepository(db)
+	userRepos := favpost.NewUserRepository(db)
 
 	// enqueue
 	redisClient := redis.New("tcp:127.0.0.1:6379", 0, "")
@@ -48,7 +49,7 @@ func main() {
 	go func() {
 		for {
 			// 酷いけどとりあえず全ユーザーを取得して処理を回す
-			users := &[]model.User{}
+			users := &[]favpost.User{}
 			users, err = userRepos.GetAll()
 			// sleep 5min
 			for _, user := range *users {
@@ -59,16 +60,16 @@ func main() {
 
 				for _, tweet := range searchResult {
 					if len(tweet.Entities.Media) > 0 {
-						ftweet := model.Tweet{
+						ftweet := favpost.Tweet{
 							Id:         tweet.Id,
 							ScreenName: tweet.User.ScreenName,
 						}
 
-						tweetStore := model.GetTweetRepository(db)
+						tweetStore := favpost.NewTweetRepository(db)
 						exists, _ := tweetStore.Exists(ftweet)
 						if !exists {
 							tweetStore.Add(ftweet)
-							model.SlackShare{conf.WebHookURL}.Share(tweet)
+							favpost.SlackShare{conf.WebHookURL}.Share(tweet)
 
 							// bot enqueue
 							_, err := botqueue.Enqueue("resque:queue:favpostbot", "Favpost", strconv.FormatInt(tweet.Id, 10), tweet.User.ScreenName)
@@ -87,5 +88,5 @@ func main() {
 		}
 	}()
 
-	server.Run(conf, db)
+	favpost.Run(conf, db)
 }

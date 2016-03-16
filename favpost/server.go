@@ -1,4 +1,4 @@
-package server
+package favpost
 
 import (
 	"database/sql"

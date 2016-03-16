@@ -1,8 +1,7 @@
-package model
+package favpost
 
 import (
 	"database/sql"
-	"github.com/shiwork/favpost/persistence"
 	"time"
 )
 
@@ -23,14 +22,14 @@ type User struct {
 }
 
 type UserRepository struct {
-	userPers  persistence.UserPersistence
-	tokenPers persistence.AccessTokenPersistence
+	userPers  UserPersistence
+	tokenPers AccessTokenPersistence
 }
 
-func GetUserRepository(db *sql.DB) UserRepository {
-	return UserRepository{
-		userPers:  persistence.UserPersistence{db},
-		tokenPers: persistence.AccessTokenPersistence{db},
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{
+		userPers:  UserPersistence{db},
+		tokenPers: AccessTokenPersistence{db},
 	}
 }
 
