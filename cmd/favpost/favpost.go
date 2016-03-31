@@ -24,7 +24,7 @@ func main() {
 	confPath := flag.String("c", "", "configuration file path")
 	flag.Parse()
 
-	conf, err := favpost.Parse(confPath)
+	conf, err := favpost.Parse(*confPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,15 +60,10 @@ func main() {
 
 				for _, tweet := range searchResult {
 					if len(tweet.Entities.Media) > 0 {
-						ftweet := favpost.Tweet{
-							Id:         tweet.Id,
-							ScreenName: tweet.User.ScreenName,
-						}
-
 						tweetStore := favpost.NewTweetRepository(db)
-						exists, _ := tweetStore.Exists(ftweet)
+						exists, _ := tweetStore.Exists(tweet)
 						if !exists {
-							tweetStore.Add(ftweet)
+							tweetStore.Add(tweet)
 							favpost.SlackShare{conf.WebHookURL}.Share(tweet)
 
 							// bot enqueue

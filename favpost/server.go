@@ -10,20 +10,19 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/garyburd/go-oauth/oauth"
 	"github.com/gorilla/sessions"
-	"github.com/shiwork/favpost/config"
-	"github.com/shiwork/favpost/model"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"gopkg.in/boj/redistore.v1"
 )
 
-var conf config.FavPConfig
+var conf FavPostConfig
 var db *sql.DB
 
-func Run(conf config.FavPConfig, dbInstance *sql.DB) {
+func Run(conf FavPostConfig, dbInstance *sql.DB) {
 	conf = conf
 	db = dbInstance
-	pongo2.DefaultSet.SetBaseDirectory(conf.TemplatePath)
+	pongo2.DefaultLoader.SetBaseDir(conf.TemplatePath)
+	pongo2.DefaultSet = pongo2.NewSet("default", pongo2.DefaultLoader)
 
 	goji.Get("/", Top)
 	goji.Get("/setting", Setting)
@@ -64,14 +63,14 @@ func Top(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repo := model.GetTweetRepository(db)
+	repo := NewTweetRepository(db)
 	tweets, err := repo.Find(20)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	if loginStatus {
-		repo := model.GetUserRepository(db)
+		repo := NewUserRepository(db)
 		user, _ := repo.Get(user_id.(int64))
 
 		// login済みの場合は設定画面に遷移
@@ -97,7 +96,7 @@ func Setting(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	repo := model.GetUserRepository(db)
+	repo := NewUserRepository(db)
 	user, _ := repo.Get(user_id.(int64))
 
 	tpl.ExecuteWriter(pongo2.Context{"user": user}, w)
@@ -160,19 +159,19 @@ func LoginCallback(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	user_id, _ := strconv.ParseInt(values["user_id"][0], 10, 64)
 
-	token := model.AccessToken{
+	token := AccessToken{
 		Id:     user_id,
 		Token:  values["oauth_token"][0],
 		Secret: values["oauth_token_secret"][0],
 	}
-	user := model.User{
+	user := User{
 		Id:          user_id,
 		ScreenName:  values["screen_name"][0],
 		AccessToken: token,
 	}
 
 	// save user and token
-	repo := model.GetUserRepository(db)
+	repo := NewUserRepository(db)
 	err = repo.Add(user)
 	if err != nil {
 		fmt.Println("Error: %v", err)

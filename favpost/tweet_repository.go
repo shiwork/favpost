@@ -23,7 +23,7 @@ func NewTweetRepository(db *sql.DB) *TweetRepository {
 	return &TweetRepository{db}
 }
 
-func (r *TweetRepository) Add(tweet *anaconda.Tweet) error {
+func (r *TweetRepository) Add(tweet anaconda.Tweet) error {
 	query := `INSERT INTO tweet (tweet_id, screen_name) VALUES (?, ?)`
 	_, err := r.db.Exec(query, tweet.Id, tweet.User.ScreenName)
 	if err != nil {
@@ -32,7 +32,7 @@ func (r *TweetRepository) Add(tweet *anaconda.Tweet) error {
 	return nil
 }
 
-func (r *TweetRepository) Exists(tweet *anaconda.Tweet) (bool, error) {
+func (r *TweetRepository) Exists(tweet anaconda.Tweet) (bool, error) {
 	query := `SELECT * FROM tweet WHERE tweet_id = ? LIMIT 1`
 	row := r.db.QueryRow(query, tweet.Id)
 	storeTweet := &Tweet{}

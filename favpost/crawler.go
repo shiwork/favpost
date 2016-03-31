@@ -5,9 +5,11 @@ import (
 	"net/url"
 )
 
-func CrawlTwitterFavorite(string access_token, string access_token_secret){
+func CrawlTwitterFavorite(access_token string, access_token_secret string){
 	api := anaconda.NewTwitterApi(access_token, access_token_secret)
-	searchResult, _ := api.GetFavorites(url.Values{"count": 200})
+	var values []string
+	values[0] = "200"
+	searchResult, _ := api.GetFavorites(url.Values{"count": values})
 
 	for _, tweet := range searchResult {
 		if len(tweet.Entities.Media) > 0 {
