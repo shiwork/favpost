@@ -1,4 +1,4 @@
-package config
+package favpost
 
 import (
 	"encoding/json"
@@ -11,21 +11,21 @@ type TwitterConsumer struct {
 	ConsumerSecret string `json:"consumer_secret"`
 }
 
-type AccessToken struct {
+type TwitterAccessToken struct {
 	Token  string `json:"token"`
 	Secret string `json:"secret"`
 }
 
-type FavPConfig struct {
-	Consumer    TwitterConsumer `json:"twitter_consumer"`
-	AccessToken AccessToken     `json:"access_token"`
-	WebHookURL  string          `json:"web_hook_url"`
-	DbDsn       string          `json:"db_dsn"`
-	TemplatePath string			`json:"template_path"`
+type FavPostConfig struct {
+	Consumer     TwitterConsumer `json:"twitter_consumer"`
+	AccessToken  TwitterAccessToken `json:"access_token"`
+	WebHookURL   string `json:"web_hook_url"`
+	DbDsn        string `json:"db_dsn"`
+	TemplatePath string `json:"template_path"`
 }
 
-func Parse(filename string) (FavPConfig, error) {
-	var config FavPConfig
+func Parse(filename string) (FavPostConfig, error) {
+	var config FavPostConfig
 	jsonString, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Println("Failed to read config file:", err)
